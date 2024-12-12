@@ -46,10 +46,11 @@ class BaseService {
   }
 
   async update(id, data) {
-    const record = await this.findById(id);
-    record = { ...record, ...data };
+    let record = await this.findById(id);
+    const { createdAt, updatedAt, ...filteredRecord } = record
+    const updatedRecord = { ...filteredRecord, ...data };
     try {
-      return await this.model.update(record);
+      return await this.model.update(updatedRecord);
     } catch (error) {
       if (error.code === "ENOTFOUND" || error.code === "ECONNABORTED") {
         throw new DatabaseError("Unable to retrieve data from DynamoDB", error);
