@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Environment name
+
+  TasksTableName:
+    Type: String
+    Default: tm-tasks
+    Description: DynamoDB table name for tasks
+
+  UsersTableName:
+    Type: String
+    Default: tm-users
+    Description: DynamoDB table name for users
+
+  AttachmentsBucketName:
+    Type: String
+    Default: tm-attachments-task-images
+    Description: S3 bucket name for attachments
+
+  StageName:
+    Type: String
+    Default: dev
+    Description: API Gateway stage name
+
+
+Resources:
+  TaskManagerApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: server.handler
+      Runtime: nodejs22.x
+      CodeUri: ./
+      MemorySize: 256
+      Timeout: 30
+      Environment:
+        Variables:
+          NODE_ENV: !Ref Environment
+          ATTACHMENTS_BUCKET: !Ref AttachmentsBucketName
+          TASKS_TABLE: !Ref TasksTableName
+          USERS_TABLE: !Ref UsersTableName
+          REMOTE_API_BASE_URL: https://jsonplaceholder.typicode.com/
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            Stage: !Ref StageName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TasksTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - S3CrudPolicy:
+            BucketName: !Ref AttachmentsBucketName
+  ApiGatewayApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Environment  # Or any other stage name you prefer
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+        AllowOrigins:
+          - '*'
+      # Optional stage configurations
+      StageVariables:
+        Environment: !Ref Environment
+  TasksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${TasksTableName}
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${UsersTableName}
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  TaskAttachmentsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AttachmentsBucketName}
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/
+  TasksTableName:
+    Description: Name of the Tasks DynamoDB table
+    Value: !Ref TasksTable
+  UsersTableName:
+    Description: Name of the Users DynamoDB table
+    Value: !Ref UsersTable
+  BucketName:
+    Description: Name of the S3 bucket
+    Value: !Ref TaskAttachmentsBucket

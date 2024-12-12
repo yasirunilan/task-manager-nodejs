@@ -1,0 +1,11 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "amused-task-manager"
+resolve_s3 = true
+s3_prefix = "amused-task-manager"
+region = "ap-south-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+image_repositories = []
+parameter_overrides = "Environment=\"dev\" TasksTableName=\"tm-tasks\" UsersTableName=\"tm-users\" AttachmentsBucketName=\"tm-attachments-task-images\" StageName=\"dev\""

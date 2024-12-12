@@ -1,0 +1,17 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /api/v1/tasks",
+  "rawPath": "/api/v1/tasks",
+  "rawQueryString": "",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/api/v1/tasks"
+    }
+  },
+  "body": "{\"title\":\"Test Task\",\"description\":\"Test Description\"}",
+  "isBase64Encoded": false
+}

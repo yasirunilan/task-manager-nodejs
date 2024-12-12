@@ -3,6 +3,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import { rateLimit } from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
 import v1Routes from "./routes/v1/index.js";
+import healthRoute from "./routes/health.routes.js";
 import errorHandler from "./middlewares/errorHandler.middleware.js";
 const app = express();
 
@@ -43,6 +44,7 @@ const swaggerOptions = {
   apis: ["./src/routes/v1/*.js"], // Files containing annotations
 };
 
+app.use('/api/health', healthRoute);
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
