@@ -1,6 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+/**
+ * Configuration object for the application.
+ *
+ */
 export default {
   aws: {
     region: process.env.REGION_AWS || "ap-south-1",
@@ -11,9 +15,8 @@ export default {
     },
     dynamodb: {
       tasksTable: process.env.TASKS_TABLE,
-      usersTable: process.env.USERS_TABLE
-    }
+      usersTable: process.env.USERS_TABLE,
+    },
   },
-  remoteAPIBaseUrl:
-    process.env.REMOTE_API_BASE_URL,
+  remoteAPIBaseUrl: process.env.REMOTE_API_BASE_URL,
 };

@@ -62,24 +62,13 @@ Resources:
             TableName: !Ref UsersTableName
         - S3CrudPolicy:
             BucketName: !Ref AttachmentsBucketName
-  ApiGatewayApi:
-    Type: AWS::Serverless::HttpApi
-    Properties:
-      StageName: !Ref Environment  # Or any other stage name you prefer
-      CorsConfiguration:
-        AllowMethods:
-          - GET
-          - POST
-          - PUT
-          - DELETE
-          - OPTIONS
-        AllowHeaders:
-          - '*'
-        AllowOrigins:
-          - '*'
-      # Optional stage configurations
-      StageVariables:
-        Environment: !Ref Environment
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:UpdateTimeToLive
+                - dynamodb:DescribeTimeToLive
+              Resource:
+                - !GetAtt UsersTable.Arn
   TasksTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -96,9 +85,12 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub ${UsersTableName}
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
       AttributeDefinitions:
         - AttributeName: id
-          AttributeType: S
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
